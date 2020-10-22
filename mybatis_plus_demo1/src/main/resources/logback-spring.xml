@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 教程
+（1）logback配置模板（超详细）https://www.cnblogs.com/z-x-p/p/11686963.html
+（2）logback中文手册 http://www.logback.cn/
+（3）springboot官方文档logging部分 https://docs.spring.io/spring-boot/docs/2.1.13.RELEASE/reference/htmlsingle/#boot-features-logging
+（4）logback 配置详解——logger、root https://blog.csdn.net/u012129558/article/details/79947477
+ -->
+<!-- debug（非必须）属性：true表示输出logback内部的日志信息（不影响配置和级别） ;
+     scan（非必须）属性：默认为false，true表示扫描配置文件的变化并自动重新配置，默认每隔1分钟扫描一次；
+     scanPeriod（非必须）属性：搭配scan属性使用，设置扫描的间隔时间
+-->
+<configuration debug="false" scan="true" scanPeriod="1 seconds">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <property name="projectName" value="environmentServer" />
+    <!--spring.application.name 是　application.yml 中设置--> 
+    <!--设置变量，下面有用到。含义是日志保存路径-->
+　　	<springProperty scope="context" name="logging.path" source="logging.path"/>
+    <!-- 用于指定logger上下文名称，默认为default -->
+    <contextName>${projectName}</contextName>
+
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <!--日志输出格式：console日志不输出年月日-->
+        <encoder>
+            <!-- <pattern>${CONSOLE_LOG_PATTERN}</pattern> --> <!-- springboot logback默认配置 -->
+            <pattern>%d{HH:mm:ss.SSS} [*%-4.4t] %clr(%-5level) %clr(%-60.60logger{60}){cyan} %clr(:){faint} %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出到文件-->
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志名，用到了上面配置的路径-->
+        <file>${logging.path}/${projectName}.log</file>
+        <!--根据yyyy-MM-dd所以是每天新建文件，也可以设置其它格式，如每月或每分-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.path}/debugLogs/${projectName}.%d{yyyy-MM-dd}.log</fileNamePattern>
+        	<maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger- %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <!--输出到文件-->
+    <appender name="monitorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志名，用到了上面配置的路径-->
+        <file>${logging.path}/${projectName}.monitor.log</file>
+        <!--根据yyyy-MM-dd所以是每天新建文件，也可以设置其它格式，如每月或每分-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.path}/monitorLogs/${projectName}.monitor.%d{yyyy-MM-dd}.log</fileNamePattern>
+        	<maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger- %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <!--输出到文件-->
+    <appender name="errorRollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>error</level>
+        </filter>
+        <!--日志名，用到了上面配置的路径-->
+        <file>${logging.path}/${projectName}.error.log</file>
+        <!--根据yyyy-MM-dd所以是每天新建文件，也可以设置其它格式，如每月或每分-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.path}/errorLogs/${projectName}.error.%d{yyyy-MM-dd}.log</fileNamePattern>
+        	<maxHistory>90</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%15.15t] %-5level %logger- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--设置项目日志级别-->
+    <root level="info">
+        <appender-ref ref="console"/>
+        <appender-ref ref="rollingFile" />
+        <appender-ref ref="errorRollingFile"/>
+    </root>
+
+    <!--设置项目代码日志级别-->
+    <logger name="com.ldst" level="DEBUG"/>
+    
+    <!-- 记录监测数据转储结果 -->
+    <logger name="com.ldst.service" level="INFO">
+    	<appender-ref ref="monitorFile"/>
+    </logger>
+    <logger name="com.ldst.common.service" level="INFO">
+    	<appender-ref ref="monitorFile"/>
+    </logger>
+    <logger name="com.ldst.common.util.ScheduleUtil" level="INFO">
+    	<appender-ref ref="monitorFile"/>
+    </logger>
+    
+    <!--设置mongodb日志级别-->
+    <logger name="org.springframework.data.mongodb.core" level="DEBUG"/>
+</configuration>

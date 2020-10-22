@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.lmj</groupId>
+		<artifactId>mybatis_plus_demos</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>mybatis_plus_demo1</artifactId>
+	<name>mybatis_plus_demo1</name>
+	<description>mybatis_plus_demo</description>
+	
+	<profiles>
+        <profile>
+            <id>dev</id> <!-- 打包时相应修改为dev/prod/test -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <profileActive>dev</profileActive>
+            </properties>
+        </profile>
+    </profiles>
+</project>
